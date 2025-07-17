@@ -22,9 +22,9 @@ export const getProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   try {
-    const { nombre, descripcion, precio, stock, id_categoria } = req.body;
+    const { nombre, descripcion, precio, stock, id_categoria, estado } = req.body;
 
-    if (!nombre || !precio || !stock || !id_categoria) {
+    if (!nombre || !precio || !stock || !id_categoria || estado === undefined) {
       return res.status(400).json({ message: 'Faltan datos obligatorios' });
     }
 
@@ -34,8 +34,8 @@ export const createProduct = async (req, res) => {
     }
 
     const [result] = await db.execute(
-      'INSERT INTO inventory (nombre, descripcion, precio, stock, imagen_url, id_categoria) VALUES (?, ?, ?, ?, ?, ?)',
-      [nombre, descripcion || '', precio, stock, imagen_url, id_categoria] // Cambiado de null a ''
+      'INSERT INTO inventory (nombre, descripcion, precio, stock, imagen_url, id_categoria, estado) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [nombre, descripcion || '', precio, stock, imagen_url, id_categoria, estado]
     );
 
     const [newProduct] = await db.execute(
@@ -55,7 +55,6 @@ export const createProduct = async (req, res) => {
     res.status(500).json({ message: 'Error al crear producto' });
   }
 };
-
 export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -74,7 +73,7 @@ export const deleteProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, descripcion, precio, stock, id_categoria } = req.body;
+    const { nombre, descripcion, precio, stock, id_categoria, estado } = req.body;
 
     // Verificar si el producto existe
     const [existingProduct] = await db.execute(
@@ -98,13 +97,14 @@ export const updateProduct = async (req, res) => {
     const nuevoPrecio = precio !== undefined ? precio : existingProduct[0].precio;
     const nuevoStock = stock !== undefined ? stock : existingProduct[0].stock;
     const nuevaCategoria = id_categoria || existingProduct[0].id_categoria;
+    const nuevoEstado = estado !== undefined ? estado : existingProduct[0].estado;
 
     // Actualizar el producto
     await db.execute(
       `UPDATE inventory 
-       SET nombre = ?, descripcion = ?, precio = ?, stock = ?, imagen_url = ?, id_categoria = ?
+       SET nombre = ?, descripcion = ?, precio = ?, stock = ?, imagen_url = ?, id_categoria = ?, estado = ?
        WHERE id = ?`,
-      [nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevoStock, imagen_url, nuevaCategoria, id]
+      [nuevoNombre, nuevaDescripcion, nuevoPrecio, nuevoStock, imagen_url, nuevaCategoria, nuevoEstado, id]
     );
 
     // Obtener el producto actualizado
