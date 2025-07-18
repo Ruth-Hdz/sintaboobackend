@@ -20,3 +20,23 @@ export const getCategorias = async (req, res) => {
     });
   }
 };
+
+export const createCategoria = async (req, res) => {
+  const { nombre, icono } = req.body;
+
+  if (!nombre || !icono) {
+    return res.status(400).json({ message: 'Nombre e icono son obligatorios' });
+  }
+
+  try {
+    const [result] = await db.execute(
+      'INSERT INTO categorias (nombre, icono) VALUES (?, ?)',
+      [nombre, icono]
+    );
+
+    res.status(201).json({ id: result.insertId, nombre, icono });
+  } catch (error) {
+    console.error('Error en createCategoria:', error);
+    res.status(500).json({ message: 'Error al crear categoría', error: error.message });
+  }
+};
