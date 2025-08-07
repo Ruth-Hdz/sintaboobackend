@@ -34,6 +34,7 @@ export const getProductosRecomendados = async (req, res) => {
       descripcion: producto.descripcion,
       precio: producto.precio,
       stock: producto.stock,
+      estado: producto.estado,
       imagen: producto.imagen_url,
       categoria: {
         id: producto.id_categoria,
@@ -70,7 +71,19 @@ export const getAllProductos = async (req, res) => {
       SELECT 
         p.*,
         c.nombre AS categoria_nombre,
-        c.icono AS categoria_icono
+        c.icono AS categoria_icono,
+        -- Subconsulta: promedio de estrellas
+        (
+          SELECT ROUND(AVG(estrellas), 1)
+          FROM calificaciones
+          WHERE id_producto = p.id
+        ) AS promedio_estrellas,
+        -- Subconsulta: total de corazones
+        (
+          SELECT COUNT(*)
+          FROM reacciones
+          WHERE id_producto = p.id
+        ) AS corazones
       FROM inventory p
       LEFT JOIN categorias c ON p.id_categoria = c.id
       WHERE p.estado = 'activo'
@@ -85,19 +98,23 @@ export const getAllProductos = async (req, res) => {
       });
     }
 
-    // Formatear productos si quieres devolver la categoría
     const productosFormateados = productos.map(producto => ({
       id: producto.id,
       nombre: producto.nombre,
       descripcion: producto.descripcion,
       precio: producto.precio,
       stock: producto.stock,
+      estado: producto.estado,
       imagen: producto.imagen_url,
       fecha_creacion: producto.fecha_creacion,
       categoria: {
         id: producto.id_categoria,
         nombre: producto.categoria_nombre,
         icono: producto.categoria_icono
+      },
+      metricas: {
+        corazones: producto.corazones || 0,
+        promedio_estrellas: producto.promedio_estrellas || "0.0"
       }
     }));
 

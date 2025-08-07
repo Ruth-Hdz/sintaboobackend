@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import adminRoutes from './routes/adminRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import productosRoutes from './routes/productosRoutes.js';
+import comprasRoutes from './routes/comprasRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,6 +26,7 @@ app.use("/api/categorias", categoriasRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', userRoutes);
 app.use('/api/productos', productosRoutes);
+app.use('/api/compras', comprasRoutes);
 
 // Puerto
 const PORT = process.env.PORT || 8000;

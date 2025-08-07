@@ -2,22 +2,20 @@ import db from '../database.js';
 
 export const getCategorias = async (req, res) => {
   try {
-    const [rows] = await db.execute('SELECT * FROM categorias');
-    
-    // Verifica qué datos estás recibiendo de la base de datos
-    console.log('Datos de categorías:', rows);
-    
-    if (rows.length === 0) {
-      return res.status(404).json({ message: 'No se encontraron categorías' });
-    }
-    
-    res.json(rows);
+    const [categorias] = await db.query(`
+      SELECT 
+        c.*,
+        COUNT(i.id) AS total_productos,
+        SUM(CASE WHEN i.estado = 'activo' THEN 1 ELSE 0 END) AS productos_activos
+      FROM categorias c
+      LEFT JOIN inventory i ON i.id_categoria = c.id
+      GROUP BY c.id
+    `);
+
+    res.json(categorias);
   } catch (error) {
-    console.error('Error en getCategorias:', error);
-    res.status(500).json({ 
-      message: 'Error al obtener categorías',
-      error: error.message 
-    });
+    console.error('Error al obtener las categorías:', error);
+    res.status(500).json({ message: 'Error del servidor', error: error.message });
   }
 };
 
@@ -50,21 +48,23 @@ export const getCategoriasConProductos = async (req, res) => {
       return res.status(404).json({ message: 'No se encontraron categorías' });
     }
 
-    // Para cada categoría, obtenemos sus productos (desde inventory)
+    // Para cada categoría, obtenemos sus productos con métricas
     const categoriasConProductos = await Promise.all(
       categorias.map(async (categoria) => {
         const [productos] = await db.execute(
           `SELECT 
-            id, 
-            nombre, 
-            precio, 
-            imagen_url as imagen,
-            descripcion,
-            stock,
-            estado
-           FROM inventory 
-           WHERE id_categoria = ? 
-           AND estado = 'activo'
+            i.id, 
+            i.nombre, 
+            i.precio, 
+            i.imagen_url as imagen,
+            i.descripcion,
+            i.stock,
+            i.estado,
+            (SELECT COUNT(*) FROM reacciones WHERE id_producto = i.id) AS corazones,
+            (SELECT IFNULL(ROUND(AVG(estrellas), 1), 0) FROM calificaciones WHERE id_producto = i.id) AS promedio_estrellas
+           FROM inventory i
+           WHERE i.id_categoria = ? 
+           AND i.estado = 'activo'
            LIMIT 5`,
           [categoria.id]
         );
@@ -80,7 +80,12 @@ export const getCategoriasConProductos = async (req, res) => {
             precio: p.precio,
             imagen: p.imagen,
             descripcion: p.descripcion,
-            stock: p.stock
+            stock: p.stock,
+            estado: p.estado,
+            metricas: {
+              corazones: p.corazones || 0,
+              promedio_estrellas: parseFloat(p.promedio_estrellas) || 0.0
+            }
           }))
         };
       })
@@ -105,18 +110,33 @@ export const getUltimosProductos = async (req, res) => {
   try {
     const [productos] = await db.execute(`
       SELECT 
-        id,
-        nombre,
-        descripcion,
-        precio,
-        stock,
-        imagen_url AS imagen,
-        id_categoria,
-        estado,
-        fecha_creacion
-      FROM inventory
-      WHERE estado = 'activo'
-      ORDER BY fecha_creacion DESC
+        p.id,
+        p.nombre,
+        p.descripcion,
+        p.precio,
+        p.stock,
+        p.imagen_url AS imagen,
+        p.id_categoria,
+        p.estado,
+        p.fecha_creacion,
+        c.nombre AS categoria_nombre,
+        c.icono AS categoria_icono,
+        IFNULL(r.corazones, 0) AS corazones,
+        IFNULL(cal.promedio_estrellas, 0) AS promedio_estrellas
+      FROM inventory p
+      LEFT JOIN categorias c ON p.id_categoria = c.id
+      LEFT JOIN (
+        SELECT id_producto, COUNT(*) AS corazones
+        FROM reacciones
+        GROUP BY id_producto
+      ) r ON p.id = r.id_producto
+      LEFT JOIN (
+        SELECT id_producto, ROUND(AVG(estrellas), 1) AS promedio_estrellas
+        FROM calificaciones
+        GROUP BY id_producto
+      ) cal ON p.id = cal.id_producto
+      WHERE p.estado = 'activo'
+      ORDER BY p.fecha_creacion DESC
       LIMIT 5
     `);
 
@@ -124,12 +144,33 @@ export const getUltimosProductos = async (req, res) => {
       return res.status(404).json({ message: 'No hay productos recientes disponibles' });
     }
 
-    res.status(200).json(productos);
+    const productosFormateados = productos.map(prod => ({
+      id: prod.id,
+      nombre: prod.nombre,
+      descripcion: prod.descripcion,
+      precio: prod.precio,
+      stock: prod.stock,
+      estado: prod.estado,
+      imagen: prod.imagen,
+      fecha_creacion: prod.fecha_creacion,
+      categoria: {
+        id: prod.id_categoria,
+        nombre: prod.categoria_nombre,
+        icono: prod.categoria_icono
+      },
+      metricas: {
+        corazones: prod.corazones,
+        promedio_estrellas: prod.promedio_estrellas
+      }
+    }));
+
+    res.status(200).json(productosFormateados);
+
   } catch (error) {
     console.error('Error en getUltimosProductos:', error);
-    res.status(500).json({ 
-      message: 'Error al obtener los últimos productos', 
-      error: error.message 
+    res.status(500).json({
+      message: 'Error al obtener los últimos productos',
+      error: error.message
     });
   }
 };
@@ -181,8 +222,6 @@ export const editarCategoria = async (req, res) => {
     });
   }
 };
-
-
 
 export const deleteCategoria = async (req, res) => {
   const { id } = req.params;
