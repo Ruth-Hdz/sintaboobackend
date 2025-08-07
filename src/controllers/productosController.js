@@ -63,8 +63,6 @@ export const getProductosRecomendados = async (req, res) => {
   }
 };
 
-
-
 export const getAllProductos = async (req, res) => {
   try {
     const query = `

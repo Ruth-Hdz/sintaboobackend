@@ -8,6 +8,9 @@ import adminRoutes from './routes/adminRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import productosRoutes from './routes/productosRoutes.js';
 import comprasRoutes from './routes/comprasRoutes.js';
+import perfilTiendaRoutes from './routes/perfilTiendaRoutes.js';
+import consejosRoutes from './routes/consejosRoutes.js';
+import busquedasRoutes from './routes/busquedasRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,6 +30,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/auth', userRoutes);
 app.use('/api/productos', productosRoutes);
 app.use('/api/compras', comprasRoutes);
+app.use('/api', perfilTiendaRoutes);
+app.use('/api/consejos', consejosRoutes);
+app.use('/api/busquedas', busquedasRoutes);
 
 // Puerto
 const PORT = process.env.PORT || 8000;
