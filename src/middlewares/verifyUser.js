@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-const SECRET = process.env.JWT_SECRET_ADMIN;
+const SECRET = process.env.JWT_SECRET_USER;
 
-export const verifyAdmin = (req, res, next) => {
+export const verifyUser = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ message: 'No autorizado' });
 
@@ -9,11 +9,11 @@ export const verifyAdmin = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, SECRET);
 
-    if (decoded.rol !== 'admin' && decoded.rol !== 'superadmin') {
+    if (decoded.rol !== 'usuario') {
       return res.status(403).json({ message: 'Acceso denegado' });
     }
 
-    req.admin = decoded;
+    req.user = decoded;
     next();
   } catch (err) {
     return res.status(401).json({ message: 'Token inválido' });

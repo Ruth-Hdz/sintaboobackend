@@ -1,5 +1,8 @@
 import pool from '../database.js';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+const SECRET = process.env.JWT_SECRET_ADMIN;
 
 export const loginAdmin = async (req, res) => {
   const { username, password } = req.body;
@@ -21,15 +24,25 @@ export const loginAdmin = async (req, res) => {
       return res.status(401).json({ message: 'Contraseña incorrecta' });
     }
 
-    // Si es correcto, devolver solo datos útiles
+    // Token JWT con id, username, rol
+    const token = jwt.sign(
+      { id: admin.id, username: admin.username, rol: admin.rol },
+      SECRET,
+      { expiresIn: '8h' }
+    );
+
     res.status(200).json({
-      id: admin.id,
-      username: admin.username,
-      rol: admin.rol,
       message: 'Login exitoso',
+      token,
+      admin: {
+        id: admin.id,
+        username: admin.username,
+        rol: admin.rol,
+      }
     });
   } catch (error) {
     console.error('Error en login admin:', error);
     res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }
 };
+

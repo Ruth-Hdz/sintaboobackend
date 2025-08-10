@@ -11,6 +11,8 @@ import comprasRoutes from './routes/comprasRoutes.js';
 import perfilTiendaRoutes from './routes/perfilTiendaRoutes.js';
 import consejosRoutes from './routes/consejosRoutes.js';
 import busquedasRoutes from './routes/busquedasRoutes.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

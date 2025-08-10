@@ -1,5 +1,8 @@
 import pool from '../database.js';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+const SECRET = process.env.JWT_SECRET_USER;
 
 export const registerUser = async (req, res) => {
   const { nombre, apellido, email, password, acepta_terminos } = req.body;
@@ -13,16 +16,13 @@ export const registerUser = async (req, res) => {
   }
 
   try {
-    // Verificar si el correo ya existe
     const [existingUser] = await pool.execute('SELECT id FROM usuarios WHERE correo = ?', [email]);
     if (existingUser.length > 0) {
       return res.status(409).json({ message: 'Correo ya registrado' });
     }
 
-    // Hashear la contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insertar usuario
     await pool.execute(
       'INSERT INTO usuarios (nombre, apellido, correo, password, acepta_terminos) VALUES (?, ?, ?, ?, ?)',
       [nombre, apellido, email, hashedPassword, acepta_terminos]
@@ -43,7 +43,6 @@ export const loginUser = async (req, res) => {
   }
 
   try {
-    // Buscar usuario por correo
     const [users] = await pool.execute('SELECT * FROM usuarios WHERE correo = ?', [identifier]);
     if (users.length === 0) {
       return res.status(401).json({ message: 'Correo no encontrado' });
@@ -51,14 +50,20 @@ export const loginUser = async (req, res) => {
 
     const user = users[0];
 
-    // Comparar contraseña
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       return res.status(401).json({ message: 'Contraseña incorrecta' });
     }
 
-    // Aquí puedes retornar lo que tu frontend necesita (ejemplo: nombre)
+    const token = jwt.sign(
+      { id: user.id, correo: user.correo, rol: 'usuario' },
+      SECRET,
+      { expiresIn: '8h' }
+    );
+
     res.json({
+      message: 'Login exitoso',
+      token,
       user: {
         id: user.id,
         nombre: user.nombre,
