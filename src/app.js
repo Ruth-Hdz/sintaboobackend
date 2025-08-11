@@ -11,6 +11,8 @@ import comprasRoutes from './routes/comprasRoutes.js';
 import perfilTiendaRoutes from './routes/perfilTiendaRoutes.js';
 import consejosRoutes from './routes/consejosRoutes.js';
 import busquedasRoutes from './routes/busquedasRoutes.js';
+import calificacionRoutes from './routes/calificacionRoutes.js';
+import reaccionRoutes from './routes/reaccionRoutes.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -35,6 +37,8 @@ app.use('/api/compras', comprasRoutes);
 app.use('/api', perfilTiendaRoutes);
 app.use('/api/consejos', consejosRoutes);
 app.use('/api/busquedas', busquedasRoutes);
+app.use('/api/calificaciones', calificacionRoutes);
+app.use('/api/reacciones', reaccionRoutes);
 
 // Puerto
 const PORT = process.env.PORT || 8000;
