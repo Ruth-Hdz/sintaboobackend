@@ -1,5 +1,3 @@
-// controllers/perfilTiendaController.js
-
 import db from '../database.js';
 
 export const getPerfilTienda = async (req, res) => {
@@ -15,9 +13,6 @@ export const getPerfilTienda = async (req, res) => {
   }
 };
 
-
-
-// 🟢 Actualizar perfil con imagen
 export const updatePerfilTienda = async (req, res) => {
   try {
     const {
@@ -31,23 +26,12 @@ export const updatePerfilTienda = async (req, res) => {
       twitter,
     } = req.body;
 
-    // Si se subió una imagen, guarda la ruta
+    // Si se subió una imagen, guarda la ruta relativa para acceder desde el frontend
     const logo = req.file ? `/uploads/${req.file.filename}` : null;
 
-    const updateFields = {
-      descripcion,
-      telefono,
-      correo,
-      direccion,
-      horario_atencion,
-      facebook,
-      instagram,
-      twitter,
-    };
-
     let query = `UPDATE perfil_tienda SET 
-        descripcion = ?, telefono = ?, correo = ?, direccion = ?, 
-        horario_atencion = ?, facebook = ?, instagram = ?, twitter = ?, actualizado_en = NOW()`;
+      descripcion = ?, telefono = ?, correo = ?, direccion = ?, 
+      horario_atencion = ?, facebook = ?, instagram = ?, twitter = ?, actualizado_en = NOW()`;
 
     const values = [
       descripcion,
@@ -79,5 +63,3 @@ export const updatePerfilTienda = async (req, res) => {
     res.status(500).json({ message: 'Error del servidor' });
   }
 };
-
-

@@ -8,3 +8,4 @@ CREATE TABLE admins (
   rol ENUM('admin', 'superadmin') NOT NULL DEFAULT 'admin',
   fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
