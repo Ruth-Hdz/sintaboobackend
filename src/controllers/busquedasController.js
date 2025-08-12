@@ -14,56 +14,57 @@ export const buscarProductosCategorias = async (req, res) => {
     const searchTerm = `%${q}%`;
 
     const query = `
-      SELECT 
-        'producto' AS tipo,
-        p.id,
-        p.nombre,
-        p.descripcion,
-        p.precio,
-        p.stock,
-        p.estado,
-        p.imagen_url AS imagen,
-        p.fecha_creacion,
-        CAST(
-          JSON_OBJECT(
-            'id', c.id,
-            'nombre', c.nombre,
-            'icono', c.icono
-          ) AS CHAR
-        ) AS categoria,
-        CAST(
-          JSON_OBJECT(
-            'corazones', IFNULL((SELECT COUNT(*) FROM reacciones r WHERE r.id_producto = p.id), 0),
-            'promedio_estrellas', IFNULL((SELECT ROUND(AVG(estrellas),1) FROM calificaciones cal WHERE cal.id_producto = p.id), "0.0")
-          ) AS CHAR
-        ) AS metricas
-      FROM inventory p
-      LEFT JOIN categorias c ON p.id_categoria = c.id
-      WHERE p.nombre LIKE ? AND p.estado = 'activo'
+  SELECT 
+    'producto' AS tipo,
+    p.id,
+    p.nombre,
+    p.descripcion,
+    p.precio,
+    p.stock,
+    p.estado,
+    p.imagen_url AS imagen,
+    p.fecha_creacion,
+    CAST(
+      JSON_OBJECT(
+        'id', c.id,
+        'nombre', c.nombre,
+        'icono', c.icono
+      ) AS CHAR
+    ) AS categoria,
+    CAST(
+      JSON_OBJECT(
+        'corazones', IFNULL((SELECT COUNT(*) FROM reacciones r WHERE r.id_producto = p.id), 0),
+        'promedio_estrellas', IFNULL((SELECT ROUND(AVG(estrellas),1) FROM calificaciones cal WHERE cal.id_producto = p.id), '0.0')
+      ) AS CHAR
+    ) AS metricas
+  FROM inventory p
+  LEFT JOIN categorias c ON p.id_categoria = c.id
+  WHERE p.nombre LIKE ? AND p.estado = 'activo'
 
-      UNION
+  UNION
 
-      SELECT 
-        'categoria' AS tipo,
-        c.id,
-        c.nombre,
-        NULL AS descripcion,
-        NULL AS precio,
-        NULL AS stock,
-        NULL AS estado,
-        NULL AS imagen,
-        NULL AS fecha_creacion,
-        CAST(
-          JSON_OBJECT(
-            'id', c.id,
-            'nombre', c.nombre,
-            'icono', c.icono
-          ) AS CHAR
-        ) AS categoria,
-        NULL AS metricas
-      FROM categorias c
-      WHERE c.nombre LIKE ?
-    `;
+  SELECT 
+    'categoria' AS tipo,
+    c.id,
+    c.nombre,
+    NULL AS descripcion,
+    NULL AS precio,
+    NULL AS stock,
+    NULL AS estado,
+    NULL AS imagen,
+    NULL AS fecha_creacion,
+    CAST(
+      JSON_OBJECT(
+        'id', c.id,
+        'nombre', c.nombre,
+        'icono', c.icono
+      ) AS CHAR
+    ) AS categoria,
+    NULL AS metricas
+  FROM categorias c
+  WHERE c.nombre LIKE ?
+`;
+
 
     const [resultados] = await db.execute(query, [searchTerm, searchTerm]);
 
