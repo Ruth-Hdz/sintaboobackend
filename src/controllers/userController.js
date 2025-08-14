@@ -45,7 +45,7 @@ export const loginUser = async (req, res) => {
   try {
     const [users] = await pool.execute('SELECT * FROM usuarios WHERE correo = ?', [identifier]);
     if (users.length === 0) {
-      return res.status(401).json({ message: 'Correo no encontrado' });
+      return res.status(401).json({ message: 'Verifica tus datos' });
     }
 
     const user = users[0];

@@ -19,7 +19,7 @@ export const loginAdmin = async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.status(401).json({ message: 'Usuario no encontrado' });
+      return res.status(401).json({ message: 'Verifica tus datos' });
     }
 
     const admin = rows[0];
