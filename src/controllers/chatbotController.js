@@ -1,5 +1,14 @@
 import pool from '../database.js';
 
+// Función auxiliar para parsear JSON de forma segura
+const safeParse = (value) => {
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return value; // Si no es JSON válido, devuelve el valor original
+  }
+};
+
 export const guardarConversacion = async (req, res) => {
   const { nombre_usuario, respuestas, historial_completo } = req.body;
 
@@ -13,8 +22,10 @@ export const guardarConversacion = async (req, res) => {
   try {
     // Extraer metadatos importantes
     const genero = historial_completo.find(msg => 
-      msg.from === 'user' && (msg.text.toLowerCase().includes('hombre') || 
-      msg.text.toLowerCase().includes('mujer'))
+      msg.from === 'user' && (
+        msg.text.toLowerCase().includes('hombre') || 
+        msg.text.toLowerCase().includes('mujer')
+      )
     )?.text || 'No especificado';
 
     const intereses = [];
