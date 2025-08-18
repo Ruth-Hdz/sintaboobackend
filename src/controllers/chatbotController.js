@@ -68,20 +68,23 @@ export const guardarConversacion = async (req, res) => {
 export const obtenerConversaciones = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT * FROM conversaciones ORDER BY fecha DESC'
+      "SELECT * FROM conversaciones ORDER BY fecha DESC"
     );
-    
-    res.json(rows.map(row => ({
-      ...row,
-      respuestas: JSON.parse(row.respuestas),
-      historial_completo: JSON.parse(row.historial_completo),
-      metadatos: JSON.parse(row.metadatos)
-    })));
+
+    res.json(
+      rows.map(row => ({
+        ...row,
+        respuestas: safeParse(row.respuestas),
+        historial_completo: safeParse(row.historial_completo),
+        metadatos: safeParse(row.metadatos),
+      }))
+    );
   } catch (error) {
-    console.error('Error en obtenerConversaciones:', error);
-    res.status(500).json({ 
-      error: 'Error al obtener conversaciones',
-      detalle: process.env.NODE_ENV === 'development' ? error.message : undefined
+    console.error("Error en obtenerConversaciones:", error);
+    res.status(500).json({
+      error: "Error al obtener conversaciones",
+      detalle:
+        process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
