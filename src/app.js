@@ -13,6 +13,8 @@ import consejosRoutes from './routes/consejosRoutes.js';
 import busquedasRoutes from './routes/busquedasRoutes.js';
 import calificacionRoutes from './routes/calificacionRoutes.js';
 import reaccionRoutes from './routes/reaccionRoutes.js';
+import chatbotRoutes from './routes/chatbotRoutes.js';
+
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -39,6 +41,7 @@ app.use('/api/consejos', consejosRoutes);
 app.use('/api/busquedas', busquedasRoutes);
 app.use('/api/calificaciones', calificacionRoutes);
 app.use('/api/reacciones', reaccionRoutes);
+app.use('/api/conversaciones', chatbotRoutes);
 
 // Puerto
 const PORT = process.env.PORT || 8000;
